@@ -4,8 +4,8 @@ import path from "path";
 import Codegen from "./Codegen.js";
 
 const Utils = {
-    getOutPath: (outPath, idx) => {
-        const parsed = path.parse(outPath);
+    getOutPath: (filePath, idx) => {
+        const parsed = path.parse(filePath);
 
         const newName = parsed.name + (idx + 1).toString(),
             newPath = path.join(parsed.dir, newName + parsed.ext);
@@ -13,14 +13,29 @@ const Utils = {
         return newPath;
     },
 
-    readScript: filename => {
-        let script = fs.readFileSync(filename, {
+    readScript: filePath => {
+        let script = fs.readFileSync(filePath, {
             encoding: "utf-8"
         });
 
         script = Codegen.wrapScript(script);
 
         return script;
+    },
+
+    makeFolders: filePath => {
+        const dirPath = path.dirname(filePath);
+
+        try {
+            fs.accessSync(dirPath);
+            return false;
+        } catch (err) {
+            fs.mkdirSync(dirPath, {
+                recursive: true
+            });
+        }
+
+        return true;
     },
 
     capitalize: str => {

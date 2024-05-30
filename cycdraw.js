@@ -89,6 +89,7 @@ function writeImg() {
         Benchmark.startTiming("write_file_" + idx);
 
         const outPath = Utils.getOutPath(pathConfig.outPath, idx);
+        Utils.makeFolders(pathConfig.outPath);
         fs.writeFileSync(outPath, buf);
 
         Benchmark.stopTiming("write_file_" + idx);
