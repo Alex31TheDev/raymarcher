@@ -6,7 +6,7 @@ const config = {
 
     pathConfig: {
         scriptPath: "./raymarcher.js",
-        outPath: "./save/amongus.png"
+        outPath: "./saves/amongus.png"
     },
 
     frameCount: 1
