@@ -10,7 +10,7 @@ const d_max = 20,
 const enablePlane = true,
       planeHeight = 0;
 
-let eye_x = -0.5,
+let eye_x = 0,
     eye_y = 3,
     eye_z = -13;
 
@@ -36,8 +36,7 @@ const bg_r = 0,
       bg_b = 0;
 
 const drawCrosshair = true,
-      drawAxis = true,
-      axisScale = 0.09;
+      drawAxis = true;
 
 const sampleCount = 1;
 
@@ -363,7 +362,7 @@ function genVertices(n, r, a = 0) {
     return v;
 }
 
-const polyCount = 2,
+const polyCount = 7,
       r = 1,
       gap = 0.2,
       thickness = 0.2;
@@ -398,7 +397,10 @@ function sceneSdf(x, y, z) {
     for (let i = 0; i < polyCount; i++) {
         res = Op.union(
             res,
-            [Op.extrude(SDF2D.polygon, x, y, z, x_pos[i], height[i], 0, thickness, 0, 0, verts[i]), 2]
+            [
+                Op.extrude(SDF2D.polygon, x, y, z, x_pos[i], height[i], 0, thickness, 0, 0, verts[i]),
+                5
+            ]
         )
     }
 
@@ -535,9 +537,9 @@ class Camera {
     }
 
     getOrthoMatrix() {
-        const left = this.left, right = this.right,
-              top = this.top, bottom = this.bottom,
-              near = this.near, far = this.far;
+        const left = this.left, right  = this.right,
+              top  = this.top,  bottom = this.bottom,
+              near = this.near, far    = this.far;
 
         const orthoMatrix = [2 / (right - left), 0,                   0,                -(right + left) / (right - left),
                              0,                  2 / (top - bottom),  0,                -(top + bottom) / (top - bottom),
@@ -1416,7 +1418,10 @@ Materials.set(4, new SpecularDiffuseMaterial(
     1, 0.5
 ));
 
-Materials.set(5, new SpecularDiffuseMaterial)
+Materials.set(5, new SpecularDiffuseMaterial(
+    Colors.royalBlue.normalize(),
+    1, 0.5
+));
 
 function getMaterial(id) {
     switch(id) {
@@ -1451,11 +1456,20 @@ class Renderer {
 
         this.enableAxis = opts.drawAxis ?? true;
         this.enableCrosshair = opts.drawCrosshair ?? true;
-        this.axisScale = opts.axisScale ?? 0.07;
+        this.axisSize = opts.axisSize ?? 5;
     }
 
     get enableAA() {
         return this.sampleCount > 1;
+    }
+
+    get axisSize() {
+        return this.axisSize;
+    }
+
+    set axisSize(size) {
+        this._axisSize = size;
+        this.axisScale = size / img.w;
     }
 
     fragFunc(x, y) {
@@ -1573,14 +1587,32 @@ class Renderer {
         const mid_x = img.w / 2,
               mid_y = img.h / 2;
 
-        const projRight = this.camera.orthoProject(this.camera.viewMatrix[0] * this.axisScale,
-                                                   this.camera.viewMatrix[3] * this.axisScale),
+        let right_x = this.camera.viewMatrix[0],
+            right_y = this.camera.viewMatrix[3],
+            
+            up_x = this.camera.viewMatrix[1],
+            up_y = this.camera.viewMatrix[4],
 
-              projUp =    this.camera.orthoProject(this.camera.viewMatrix[1] * this.axisScale,
-                                                   this.camera.viewMatrix[4] * this.axisScale),
+            fwd_x = this.camera.viewMatrix[2] / this.camera.aspect,
+            fwd_y = this.camera.viewMatrix[5] / this.camera.aspect;
 
-              projFwd =   this.camera.orthoProject(this.camera.viewMatrix[2] / this.camera.aspect * this.axisScale,
-                                                   this.camera.viewMatrix[5] / this.camera.aspect * this.axisScale);
+        right_x *= this.axisScale;
+        right_y *= this.axisScale;
+
+        up_x *= this.axisScale;
+        up_y *= this.axisScale;
+        
+        fwd_x *= this.axisScale;
+        fwd_y *= this.axisScale;
+
+        const projRight = this.camera.orthoProject(right_x,
+                                                   right_y),
+
+              projUp =    this.camera.orthoProject(up_x,
+                                                   up_y),
+
+              projFwd =   this.camera.orthoProject(fwd_x,
+                                                   fwd_y);
 
         img.drawLine(
             mid_x, mid_y,
@@ -1676,8 +1708,7 @@ const rendererOpts = {
     sampleCount,
     enableShadows,
     drawCrosshair,
-    drawAxis,
-    axisScale
+    drawAxis
 };
 
 //debugger;
