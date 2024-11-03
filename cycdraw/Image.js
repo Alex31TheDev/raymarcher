@@ -528,7 +528,7 @@ class Image {
                 pos2 = tmp;
             }
 
-            while ((pos1 = pos2)) {
+            while (pos1 < pos2) {
                 this.pixels[pos1++] = color.r;
                 this.pixels[pos1++] = color.g;
                 this.pixels[pos1++] = color.b;

@@ -15,13 +15,12 @@ import config from "./config.js";
 const { imgConfig, pathConfig, frameCount } = config;
 
 function createImage(idx) {
-    Benchmark.startTiming("create_img_" + idx);
+    Benchmark.startTiming(`create_img_${idx + 1}`);
 
     const { w, h } = imgConfig;
     let img = new Image(w, h);
 
-    Benchmark.stopTiming("create_img_" + idx);
-
+    Benchmark.stopTiming(`create_img_${idx + 1}`);
     return img;
 }
 
@@ -45,7 +44,7 @@ function runScript(img, script, inVars) {
 function drawImg(idx, script) {
     let img = createImage(idx);
 
-    Benchmark.startTiming("draw_img_" + idx);
+    Benchmark.startTiming(`draw_img_${idx + 1}`);
 
     const vars = {
         img,
@@ -54,7 +53,7 @@ function drawImg(idx, script) {
 
     img = runScript(img, script, vars);
 
-    Benchmark.stopTiming("draw_img_" + idx);
+    Benchmark.stopTiming(`draw_img_${idx + 1}`);
 
     return img;
 }
@@ -81,24 +80,24 @@ function writeImg() {
         writeMessage(idx);
         const img = drawImg(idx, script);
 
-        Benchmark.startTiming("encode_img_" + idx);
+        Benchmark.startTiming(`encode_img_${idx + 1}`);
 
         let buf = img.encode();
 
-        Benchmark.stopTiming("encode_img_" + idx);
-        Benchmark.startTiming("write_file_" + idx);
+        Benchmark.stopTiming(`encode_img_${idx + 1}`);
+        Benchmark.startTiming(`write_file_${idx + 1}`);
 
         const outPath = Utils.getOutPath(pathConfig.outPath, idx);
         Utils.makeFolders(pathConfig.outPath);
         fs.writeFileSync(outPath, buf);
 
-        Benchmark.stopTiming("write_file_" + idx);
+        Benchmark.stopTiming(`write_file_${idx + 1}`);
     }
 
     Benchmark.stopTiming("gen_frames");
     Benchmark.stopTiming("total");
 
-    console.log("\nBenchmark times:\n\n" + Benchmark.getAll() + "\n");
+    console.log("\nBenchmark times:\n\n" + Benchmark.getAll());
 }
 
 writeImg();

@@ -1456,7 +1456,7 @@ class Renderer {
 
         this.enableAxis = opts.drawAxis ?? true;
         this.enableCrosshair = opts.drawCrosshair ?? true;
-        this.axisSize = opts.axisSize ?? 5;
+        this.axisSize = opts.axisSize ?? 15;
     }
 
     get enableAA() {
@@ -1469,7 +1469,7 @@ class Renderer {
 
     set axisSize(size) {
         this._axisSize = size;
-        this.axisScale = size / img.w;
+        this.axisScale = 2 * size / img.w;
     }
 
     fragFunc(x, y) {
