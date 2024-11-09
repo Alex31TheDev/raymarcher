@@ -363,19 +363,21 @@ function genVertices(n, r, a = 0) {
 }
 
 const polyCount = 7,
-      r = 1,
+      radius = 1,
+      offset = 1,
       gap = 0.2,
       thickness = 0.2;
 
 const x_pos =  Array(polyCount).fill().map((_, i) => {
     const pos = i - polyCount / 2 + gap / 2,
-          dist = 2 * (r + gap);
+          dist = 2 * (radius + gap);
 
-    return dist * pos + 1;
+    return dist * pos + offset;
 }),
 
       verts = Array(polyCount).fill().map((_, i) => {
-    let n = (i + 3), a = 0;
+    let n = i + 3,
+        a = 0;
 
     if (n % 4 === 0) {
         a = Math.PI / n;
@@ -383,11 +385,11 @@ const x_pos =  Array(polyCount).fill().map((_, i) => {
         a = Math.PI / 2;
     }
 
-    return genVertices(n, r, a);
+    return genVertices(n, radius, a);
 }),
 
       height = Array(polyCount).fill().map((_, i) => {
-    const n = (i + 3);
+    const n = i + 3;
     return Math.cos(Math.PI / n);
 });
 
