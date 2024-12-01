@@ -55,9 +55,6 @@ class Image {
             return [Math.floor(x0src), Math.floor(y0src), Math.floor(x1src), Math.floor(y1src)];
         }
 
-        y0src = this.h - 1 - y0src;
-        y1src = this.h - 1 - y1src;
-
         const edgeLeft = 0,
             edgeRight = this.w,
             edgeBottom = 0,
@@ -562,7 +559,7 @@ class Image {
 
             let pos = 3 * (y1 * this.w + x1);
 
-            for (; x1 < x2; x1++) {
+            for (; x1 <= x2; x1++) {
                 this.pixels[pos++] = color.r;
                 this.pixels[pos++] = color.g;
                 this.pixels[pos++] = color.b;
@@ -602,7 +599,7 @@ class Image {
 
             let pos = 3 * (y1 * this.w + x1);
 
-            for (; y1 < y2; y1++) {
+            for (; y1 <= y2; y1++) {
                 this.pixels[pos++] = color.r;
                 this.pixels[pos++] = color.g;
                 this.pixels[pos++] = color.b;
