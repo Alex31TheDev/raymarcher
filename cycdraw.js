@@ -14,13 +14,13 @@ import { ctxNames, ctxVars } from "./cycdraw/context.js";
 import config from "./config.js";
 const { imgConfig, pathConfig, frameCount } = config;
 
-function createImage(idx) {
-    Benchmark.startTiming(`create_img_${idx + 1}`);
+function createImage(frame) {
+    Benchmark.startTiming(`create_img_${frame + 1}`);
 
     const { w, h } = imgConfig;
     let img = new Image(w, h);
 
-    Benchmark.stopTiming(`create_img_${idx + 1}`);
+    Benchmark.stopTiming(`create_img_${frame + 1}`);
     return img;
 }
 
@@ -28,43 +28,43 @@ function runScript(img, script, inVars) {
     let vars = Array.from(ctxVars);
 
     for (const [key, value] of Object.entries(inVars)) {
-        const idx = ctxNames.indexOf(key);
+        const ind = ctxNames.indexOf(key);
 
-        if (idx === -1) {
+        if (ind === -1) {
             throw new DrawingError("Variable not found: " + key);
         }
 
-        vars.splice(idx, 0, value);
+        vars.splice(ind, 0, value);
     }
 
     img = Function(...ctxNames, script).apply(undefined, vars);
     return img;
 }
 
-function drawImg(idx, script) {
-    let img = createImage(idx);
+function drawImg(frame, script) {
+    let img = createImage(frame);
 
-    Benchmark.startTiming(`draw_img_${idx + 1}`);
+    Benchmark.startTiming(`draw_img_${frame + 1}`);
 
     const vars = {
         img,
-        idx
+        frame
     };
 
     img = runScript(img, script, vars);
 
-    Benchmark.stopTiming(`draw_img_${idx + 1}`);
+    Benchmark.stopTiming(`draw_img_${frame + 1}`);
 
     return img;
 }
 
-function writeMessage(idx) {
+function writeMessage(frame) {
     if (frameCount === 1) {
         console.log("Generating frame...");
         return;
     }
 
-    console.log(`Generating frame ${idx + 1}...`);
+    console.log(`Generating frame ${frame + 1}...`);
 }
 
 function writeImg() {
@@ -76,22 +76,22 @@ function writeImg() {
     Benchmark.stopTiming("read_script");
     Benchmark.startTiming("gen_frames");
 
-    for (let idx = 0; idx < frameCount; idx++) {
-        writeMessage(idx);
-        const img = drawImg(idx, script);
+    for (let frame = 0; frame < frameCount; frame++) {
+        writeMessage(frame);
+        const img = drawImg(frame, script);
 
-        Benchmark.startTiming(`encode_img_${idx + 1}`);
+        Benchmark.startTiming(`encode_img_${frame + 1}`);
 
         let buf = img.encode();
 
-        Benchmark.stopTiming(`encode_img_${idx + 1}`);
-        Benchmark.startTiming(`write_file_${idx + 1}`);
+        Benchmark.stopTiming(`encode_img_${frame + 1}`);
+        Benchmark.startTiming(`write_file_${frame + 1}`);
 
-        const outPath = Utils.getOutPath(pathConfig.outPath, idx);
+        const outPath = Utils.getOutPath(pathConfig.outPath, frame);
         Utils.makeFolders(pathConfig.outPath);
         fs.writeFileSync(outPath, buf);
 
-        Benchmark.stopTiming(`write_file_${idx + 1}`);
+        Benchmark.stopTiming(`write_file_${frame + 1}`);
     }
 
     Benchmark.stopTiming("gen_frames");

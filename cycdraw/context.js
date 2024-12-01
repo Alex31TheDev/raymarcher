@@ -11,7 +11,7 @@ import Utils from "./util/Utils.js";
 // prettier-ignore
 const ctxNames = [
     "img",
-    "idx",
+    "frame",
 
     "Image",
 

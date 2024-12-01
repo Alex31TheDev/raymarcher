@@ -1660,8 +1660,8 @@ class Renderer {
     }
 }
 
-eye_x *= Math.cos(0.02 * idx  + Math.PI / 4);
-eye_z *= Math.sin(0.02 * idx + Math.PI / 4);
+eye_x *= Math.cos(0.02 * frame  + Math.PI / 4);
+eye_z *= Math.sin(0.02 * frame + Math.PI / 4);
 
 const cameraOpts = [
     [eye_x,

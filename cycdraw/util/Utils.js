@@ -4,10 +4,10 @@ import path from "path";
 import Codegen from "./Codegen.js";
 
 const Utils = {
-    getOutPath: (filePath, idx) => {
+    getOutPath: (filePath, frame) => {
         const parsed = path.parse(filePath);
 
-        const newName = parsed.name + (idx + 1).toString(),
+        const newName = parsed.name + (frame + 1).toString(),
             newPath = path.join(parsed.dir, newName + parsed.ext);
 
         return newPath;
