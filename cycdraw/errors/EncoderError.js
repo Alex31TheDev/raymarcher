@@ -1,10 +1,5 @@
-class EncoderError extends Error {
-    constructor(message = "", ...args) {
-        super(message, ...args);
+import CustomError from "./CustomError.js";
 
-        this.name = "EncoderError";
-        this.message = message;
-    }
-}
+class EncoderError extends CustomError {}
 
 export default EncoderError;

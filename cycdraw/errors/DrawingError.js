@@ -1,10 +1,5 @@
-class DrawingError extends Error {
-    constructor(message = "", ...args) {
-        super(message, ...args);
+import CustomError from "./CustomError.js";
 
-        this.name = "DrawingError";
-        this.message = message;
-    }
-}
+class DrawingError extends CustomError {}
 
 export default DrawingError;

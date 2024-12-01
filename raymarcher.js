@@ -41,14 +41,16 @@ const drawCrosshair = true,
 const sampleCount = 1;
 
 // errors
-class RaymarcherError extends Error {
+class CustomError extends Error {
     constructor(message = "", ...args) {
         super(message, ...args);
 
-        this.name = "RaymarcherError";
-        this.message = message;
+        this.name = this.constructor.name;
+        Error.captureStackTrace(this, this.constructor);
     }
 }
+
+class RaymarcherError extends CustomError {}
 
 // operators
 const Util = {
@@ -1644,7 +1646,7 @@ class Renderer {
             img.drawLine(mid_x, 0,         mid_x, img.h,     linesColor);
         }
 
-        img.circleBres(mid_x, mid_y, 2, crosshairColor);
+        img.drawCircle(mid_x, mid_y, 2, crosshairColor);
     }
 
     render() {

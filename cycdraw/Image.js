@@ -50,7 +50,7 @@ class Image {
         return [x, y];
     }
 
-    clampLiangBarsky(x0src, y0src, x1src, y1src) {
+    _clampLiangBarsky(x0src, y0src, x1src, y1src) {
         if (this.inBounds(x0src, y0src) && this.inBounds(x1src, y1src)) {
             return [Math.floor(x0src), Math.floor(y0src), Math.floor(x1src), Math.floor(y1src)];
         }
@@ -488,7 +488,7 @@ class Image {
             return;
         }
 
-        const coords = this.clampLiangBarsky(x1, y1, x2, y2);
+        const coords = this._clampLiangBarsky(x1, y1, x2, y2);
 
         if (!coords) {
             return;
@@ -662,23 +662,23 @@ class Image {
         }
     }
 
-    circleBres(xc, yc, r, color) {
-        function circlePoints(img, xc, yc, x, y) {
-            img.setPixel(xc + x, yc + y, color);
-            img.setPixel(xc - x, yc + y, color);
-            img.setPixel(xc + x, yc - y, color);
-            img.setPixel(xc - x, yc - y, color);
-            img.setPixel(xc + y, yc + x, color);
-            img.setPixel(xc - y, yc + x, color);
-            img.setPixel(xc + y, yc - x, color);
-            img.setPixel(xc - y, yc - x, color);
-        }
+    _circlePoints(xc, yc, x, y) {
+        this.setPixel(xc + x, yc + y, color);
+        this.setPixel(xc - x, yc + y, color);
+        this.setPixel(xc + x, yc - y, color);
+        this.setPixel(xc - x, yc - y, color);
+        this.setPixel(xc + y, yc + x, color);
+        this.setPixel(xc - y, yc + x, color);
+        this.setPixel(xc + y, yc - x, color);
+        this.setPixel(xc - y, yc - x, color);
+    }
 
+    drawCircle(xc, yc, r, color) {
         let x = 0,
             y = r,
             d = 3 - 2 * r;
 
-        circlePoints(this, xc, yc, x, y);
+        this._circlePoints(xc, yc, x, y, color);
 
         while (y >= x) {
             x++;
@@ -689,7 +689,7 @@ class Image {
                 d = d + 4 * x + 6;
             }
 
-            circlePoints(this, xc, yc, x, y);
+            circlePoints(xc, yc, x, y, color);
         }
     }
 

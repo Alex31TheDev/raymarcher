@@ -1,10 +1,5 @@
-class ChecksumError extends Error {
-    constructor(message = "", ...args) {
-        super(message, ...args);
+import CustomError from "./CustomError.js";
 
-        this.name = "ChecksumError";
-        this.message = message;
-    }
-}
+class ChecksumError extends CustomError {}
 
 export default ChecksumError;
