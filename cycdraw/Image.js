@@ -659,7 +659,7 @@ class Image {
         }
     }
 
-    _circlePoints(xc, yc, x, y) {
+    _circlePoints(xc, yc, x, y, color) {
         this.setPixel(xc + x, yc + y, color);
         this.setPixel(xc - x, yc + y, color);
         this.setPixel(xc + x, yc - y, color);
@@ -686,7 +686,7 @@ class Image {
                 d = d + 4 * x + 6;
             }
 
-            circlePoints(xc, yc, x, y, color);
+            this._circlePoints(xc, yc, x, y, color);
         }
     }
 

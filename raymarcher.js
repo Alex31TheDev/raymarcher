@@ -10,9 +10,9 @@ const d_max = 20,
 const enablePlane = true,
       planeHeight = 0;
 
-let eye_x = 0,
-    eye_y = 3,
-    eye_z = -13;
+let eye_x = 4,
+    eye_y = 4,
+    eye_z = -5.5;
 
 let target_x = 0,
     target_y = 0.5,
@@ -21,15 +21,15 @@ let target_x = 0,
 const persp = 2,
       roll = 0;
 
-let light_x = 3.5,
-    light_y = 1.4,
-    light_z = -1.6;
+let light_x = 10,
+    light_y = 10,
+    light_z = -10;
 
 const lightInt = 0.7,
       lightAmb = 0.03,
       lightSize = 0.3;
 
-const enableShadows = true;
+const enableShadows = false;
 
 const bg_r = 0,
       bg_g = 0,
@@ -39,6 +39,9 @@ const drawCrosshair = true,
       drawAxis = true;
 
 const sampleCount = 1;
+
+// cube data
+const cubedat = []
 
 // errors
 class CustomError extends Error {
@@ -51,6 +54,40 @@ class CustomError extends Error {
 }
 
 class RaymarcherError extends CustomError {}
+
+// classes
+class SdfObject {
+    constructor(sdf, materialId, pos, bounds, sdfOpts) {
+        this.sdf = sdf;
+        this.materialId = materialId ?? 0;
+
+        this.pos = pos;
+        this.bounds = bounds ?? null;
+        this.sdfOpts = sdfOpts ?? [];
+    }
+
+    inBounds(x, y, z) {
+        if (this.bounds === null) return true;
+
+        x -= this.pos[0];
+        y -= this.pos[1];
+        z -= this.pos[2];
+
+        if (x < this.bounds.min_x || x > this.bounds.max_x) return false;
+        if (y < this.bounds.min_y || y > this.bounds.max_y) return false;
+        if (z < this.bounds.min_z || z > this.bounds.max_z) return false;
+
+        return true;
+    }
+
+    calcSdf(x, y, z) {
+        if (!this.inBounds(x, y, z)) {
+            return Infinity;
+        }
+
+        return [this.sdf(x, y, z, ...this.pos, ...this.sdfOpts), this.materialId];
+    }
+}
 
 // operators
 const Util = {
@@ -364,6 +401,8 @@ function genVertices(n, r, a = 0) {
     return v;
 }
 
+// polys
+/*
 const polyCount = 7,
       radius = 1,
       offset = 1,
@@ -401,20 +440,63 @@ function sceneSdf(x, y, z) {
     for (let i = 0; i < polyCount; i++) {
         res = Op.union(
             res,
-            [
-                Op.extrude(SDF2D.polygon, x, y, z, x_pos[i], height[i], 0, thickness, 0, 0, verts[i]),
-                5
-            ]
+            [Op.extrude(SDF2D.polygon, x, y, z, x_pos[i], height[i], 0, thickness, 0, 0, verts[i]), 5]
         )
     }
 
     return res;
+}
+*/
 
-    /*[Op.union(
-        [SDF3D.sphere(x, y, z, 1.4142135623730951 + 0.1, 1, -1.4142135623730951 - 0.1, 1), 2],
-        [SDF3D.sphere(x, y, z, 0, 1, 0, 1), 3],
-        [SDF3D.sphere(x, y, z, -1.4142135623730951 - 0.1, 1, 1.4142135623730951 + 0.1, 1), 4]
-    );*/
+// spheres
+/*
+function sceneSdf(x, y, z) {
+    let dist = [y, -1];
+
+    if (x >= -5 && x <= 5 && y >= 0 && y <= 5 && z >= -5 && z <= 5) {
+        dist = Op.union(dist, [SDF3D.sphere(x, y, z, 1.4142135623730951 + 0.1, 1, -1.4142135623730951 - 0.1, 1), 2]);
+        dist = Op.union(dist, [SDF3D.sphere(x, y, z, 0, 1, 0, 1), 3])
+        dist = Op.union(dist, [SDF3D.sphere(x, y, z, -1.4142135623730951 - 0.1, 1, 1.4142135623730951 + 0.1, 1), 4]);
+    }
+    
+    return dist;
+}
+*/
+
+// objects
+/*
+const objects = [
+    new SdfObject(SDF3D.sphere, 2, [1.4142135623730951 + 0.1, 1, -1.4142135623730951 - 0.1], {
+        x_min: -1, x_max: 1,
+        y_min: -1, y_max: 1,
+        z_min: -1, z_max: 1
+    }, [1]),
+
+    new SdfObject(SDF3D.sphere, 3, [0, 1, 0], {
+        x_min: -1, x_max: 1,
+        y_min: -1, y_max: 1,
+        z_min: -1, z_max: 1
+    }, [1]),
+
+    new SdfObject(SDF3D.sphere, 4, [-1.4142135623730951 - 0.1, 1, 1.4142135623730951 + 0.1], {
+        x_min: -1, x_max: 1,
+        y_min: -1, y_max: 1,
+        z_min: -1, z_max: 1
+    }, [1])
+];
+
+function sceneSdf(x, y, z) {
+    return Op.union(...objects.map(obj => obj.calcSdf(x, y, z)));
+}
+*/
+
+// cube
+function sceneSdf(x, y, z) {
+    if (x >= -3.5 && x <= 3.5 && y >= 0 && y <= 4 && z >= -3.5 && z <= 3.5) {
+        return [SDF3D.box(x, y, z, 0, 0, 0, 1.5, 3, 1.5), 6]
+    }
+    
+    return [y, -1];
 }
 
 // camera
@@ -793,7 +875,7 @@ class Raymarcher {
                                           p_y,
                                           p_z);
 
-            if (isNaN(dist)) {
+            if (Number.isNaN(dist)) {
                 throw new RaymarcherError("Distance is NaN");
             }
 
@@ -1384,6 +1466,137 @@ class CheckerMaterial extends BaseMaterial {
     }
 }
 
+class RubiksMaterial extends BaseMaterial {
+    constructor(faces, center, l, mult = 1) {
+        super();
+        this.faces = faces;
+
+        this.center = center;
+        this.l = l;
+        this.mult = mult;
+
+        this.cell = l / 3;
+        this.colors = [
+            [0, 1,   0],
+            [1, 0,   0],
+            [0, 0,   1],
+            [1, 0.5, 0],
+            [1, 1,   1],
+            [1, 1,   0],
+        ];
+    }
+
+    getCubeSide(x, y, z, eps) {
+        const r = this.l / 2;
+
+        const R = this.center.x + r,
+              L = this.center.x - r,
+              U = this.center.y + r,
+              D = this.center.y - r,
+              F = this.center.z - r,
+              B = this.center.z + r;
+
+        if (Math.abs(x - R) <= eps && y >= D - eps && y <= U + eps && z >= F - eps && z <= B + eps) return "R";
+        if (Math.abs(x - L) <= eps && y >= D - eps && y <= U + eps && z >= F - eps && z <= B + eps) return "L";
+        if (Math.abs(y - U) <= eps && x >= L - eps && x <= R + eps && z >= F - eps && z <= B + eps) return "U";
+        if (Math.abs(y - D) <= eps && x >= L - eps && x <= R + eps && z >= F - eps && z <= B + eps) return "D";
+        if (Math.abs(z - F) <= eps && x >= L - eps && x <= R + eps && y >= D - eps && y <= U + eps) return "F";
+        if (Math.abs(z - B) <= eps && x >= L - eps && x <= R + eps && y >= D - eps && y <= U + eps) return "B";
+
+        return null;
+    }
+
+    mapCoords(x, y, center, mirrorX, mirrorY) {
+        const r = this.l / 2;
+
+        let i, j;
+
+        if (!mirrorY) {
+            const B = center.y - r;
+
+            const y1_b = B + this.cell,
+                  y2_b = B + 2 * this.cell;
+
+            if (y < y1_b) i = 2;
+            else if (y < y2_b) i = 1;
+            else i = 0;
+        } else {
+            const T = center.y - r;
+
+            const y1_t = T - this.cell,
+                  y2_t = T - 2 * this.cell;
+
+            if (y > y1_t) i = 2;
+            else if (y > y2_t) i = 1;
+            else i = 0;
+        }
+
+        if (!mirrorX) {
+            const R = center.x + r;
+
+            const x1_r = R - this.cell,
+                  x2_r = R - 2 * this.cell;
+
+            if (x > x1_r) j = 2;
+            else if (x > x2_r) j = 1;
+            else j = 0;
+        } else {
+            const L = center.x - r;
+
+            const x1_l = L + this.cell,
+                  x2_l = L + 2 * this.cell;
+
+            if (x < x1_l) j = 2;
+            else if (x < x2_l) j = 1;
+            else j = 0;
+        }
+
+        return [i, j];
+    }
+
+    getColor(point) {
+        const [x, y, z] = point,
+              face = this.getCubeSide(x, y, z, 0.001);
+
+        if (!face) {
+            return [0, 0, 0];
+        }
+
+        let i, j;
+
+        switch (face) {
+            case "R":
+                [i, j] = this.mapCoords(z, y, { x: this.center.z, y: this.center.y }, false, false);
+                break;
+            case "L":
+                [i, j] = this.mapCoords(z, y, { x: this.center.z, y: this.center.y }, true,  false);
+                break;
+            case "U":
+                [i, j] = this.mapCoords(x, z, { x: this.center.z, y: this.center.z }, false, false);
+                break;
+            case "D":
+                [i, j] = this.mapCoords(x, z, { x: this.center.z, y: this.center.z }, false, true );
+                break;
+            case "F":
+                [i, j] = this.mapCoords(x, y, { x: this.center.z, y: this.center.y }, false, false);
+                break;
+            case "B":
+                [i, j] = this.mapCoords(x, y, { x: this.center.z, y: this.center.y }, true,  false);
+                break;
+        }
+
+        const s = this.faces[face][i][j],
+              col = this.colors[s - 1];
+
+        const a = this.mult * renderer.lighting.calcDiffuse(point),
+              b = Math.min(Math.max(a, 0), 1);
+
+        return [b * col[0],
+                b * col[1],
+                b * col[2]];
+    }
+}
+
 const backgroundMaterial = new SolidMaterial(
     [bg_r,
      bg_g,
@@ -1427,8 +1640,14 @@ Materials.set(5, new SpecularDiffuseMaterial(
     1, 0.5
 ));
 
+Materials.set(6, new RubiksMaterial(
+    cubedat[frame],
+    { x: 0, y: 1.5, z: 0 },
+    3, 1.5
+));
+
 function getMaterial(id) {
-    switch(id) {
+    switch (id) {
         case Raymarcher.backgroundMaterialId:
             return backgroundMaterial;
         case Raymarcher.planeMaterialId:
@@ -1662,8 +1881,10 @@ class Renderer {
     }
 }
 
+/*
 eye_x *= Math.cos(0.02 * frame  + Math.PI / 4);
 eye_z *= Math.sin(0.02 * frame + Math.PI / 4);
+*/
 
 const cameraOpts = [
     [eye_x,
@@ -1715,7 +1936,7 @@ const rendererOpts = {
     drawAxis
 };
 
-//debugger;
+debugger;
 
 const renderer = new Renderer(cameraOpts, raymarcherOpts, lightingOpts, rendererOpts);
 renderer.render();
