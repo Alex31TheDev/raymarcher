@@ -1,7 +1,7 @@
 const config = {
     imgConfig: {
-        w: 640,
-        h: 360
+        w: 854,
+        h: 480
     },
 
     pathConfig: {

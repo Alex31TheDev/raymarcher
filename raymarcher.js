@@ -490,6 +490,7 @@ function sceneSdf(x, y, z) {
 }
 */
 
+/*
 // cube
 function sceneSdf(x, y, z) {
     if (x >= -3.5 && x <= 3.5 && y >= 0 && y <= 4 && z >= -3.5 && z <= 3.5) {
@@ -498,6 +499,7 @@ function sceneSdf(x, y, z) {
     
     return [y, -1];
 }
+*/
 
 // camera
 class Camera {
@@ -1372,7 +1374,7 @@ class CheckerMaterial extends BaseMaterial {
 
         this.opts = opts;
 
-        this.checkerSize = opts.checkerSize ?? 3;
+        this.checkerSize = opts.checkerSize ?? 2;
         this.blurFactor = opts.blurFactor ?? 0.001;
     }
 
@@ -1477,13 +1479,15 @@ class RubiksMaterial extends BaseMaterial {
 
         this.cell = l / 3;
         this.colors = [
-            [0, 1,   0],
-            [1, 0,   0],
-            [0, 0,   1],
-            [1, 0.5, 0],
-            [1, 1,   1],
-            [1, 1,   0],
+            Color.fromHex("#008000").normalize(),
+            Color.fromHex("#FF0000").normalize(),
+            Color.fromHex("#0000FF").normalize(),
+            Color.fromHex("#FF8400").normalize(),
+            Color.fromHex("#FFFFFF").normalize(),
+            Color.fromHex("#FFFF00").normalize()
         ];
+
+        this.lineThickness = 0.05;
     }
 
     getCubeSide(x, y, z, eps) {
@@ -1517,7 +1521,12 @@ class RubiksMaterial extends BaseMaterial {
             const y1_b = B + this.cell,
                   y2_b = B + 2 * this.cell;
 
-            if (y < y1_b) i = 2;
+            if ((y >= y1_b - this.lineThickness && y <= y1_b + this.lineThickness) ||
+                (y >= y2_b - this.lineThickness && y <= y2_b + this.lineThickness)) {
+                i = -1;
+            }
+
+            else if (y < y1_b) i = 2;
             else if (y < y2_b) i = 1;
             else i = 0;
         } else {
@@ -1526,7 +1535,12 @@ class RubiksMaterial extends BaseMaterial {
             const y1_t = T - this.cell,
                   y2_t = T - 2 * this.cell;
 
-            if (y > y1_t) i = 2;
+            if ((y >= y1_t - this.lineThickness && y <= y1_t + this.lineThickness) ||
+                (y >= y2_t - this.lineThickness && y <= y2_t + this.lineThickness)) {
+                i = -1;
+            }
+
+            else if (y > y1_t) i = 2;
             else if (y > y2_t) i = 1;
             else i = 0;
         }
@@ -1537,7 +1551,12 @@ class RubiksMaterial extends BaseMaterial {
             const x1_r = R - this.cell,
                   x2_r = R - 2 * this.cell;
 
-            if (x > x1_r) j = 2;
+            if ((x >= x1_r - this.lineThickness && x <= x1_r + this.lineThickness) ||
+                (x >= x2_r - this.lineThickness && x <= x2_r + this.lineThickness)) {
+                j = -1;
+            }
+
+            else if (x > x1_r) j = 2;
             else if (x > x2_r) j = 1;
             else j = 0;
         } else {
@@ -1546,7 +1565,12 @@ class RubiksMaterial extends BaseMaterial {
             const x1_l = L + this.cell,
                   x2_l = L + 2 * this.cell;
 
-            if (x < x1_l) j = 2;
+            if ((x >= x1_l - this.lineThickness && x <= x1_l + this.lineThickness) ||
+                (x >= x2_l - this.lineThickness && x <= x2_l + this.lineThickness)) {
+                j = -1;
+            }
+
+            else if (x < x1_l) j = 2;
             else if (x < x2_l) j = 1;
             else j = 0;
         }
@@ -1556,7 +1580,7 @@ class RubiksMaterial extends BaseMaterial {
 
     getColor(point) {
         const [x, y, z] = point,
-              face = this.getCubeSide(x, y, z, 0.001);
+              face = this.getCubeSide(x, y, z, renderer.raymarcher.eps);
 
         if (!face) {
             return [0, 0, 0];
@@ -1585,15 +1609,21 @@ class RubiksMaterial extends BaseMaterial {
                 break;
         }
 
-        const s = this.faces[face][i][j],
-              col = this.colors[s - 1];
+        if (i < 0 || j < 0) {
+            return [0,
+                    0,
+                    0]
+        } else {
+            const s = this.faces[face][i][j],
+                  col = this.colors[s - 1];
 
-        const a = this.mult * renderer.lighting.calcDiffuse(point),
-              b = Math.min(Math.max(a, 0), 1);
+            const a = this.mult * renderer.lighting.calcDiffuse(point),
+                  b = Math.min(Math.max(a, 0), 1);
 
-        return [b * col[0],
-                b * col[1],
-                b * col[2]];
+            return [b * col[0],
+                    b * col[1],
+                    b * col[2]];
+        }
     }
 }
 
@@ -1640,11 +1670,14 @@ Materials.set(5, new SpecularDiffuseMaterial(
     1, 0.5
 ));
 
+// cube
+/*
 Materials.set(6, new RubiksMaterial(
     cubedat[frame],
     { x: 0, y: 1.5, z: 0 },
     3, 1.5
 ));
+*/
 
 function getMaterial(id) {
     switch (id) {
@@ -1679,7 +1712,7 @@ class Renderer {
 
         this.enableAxis = opts.drawAxis ?? true;
         this.enableCrosshair = opts.drawCrosshair ?? true;
-        this.axisSize = opts.axisSize ?? 15;
+        this.axisSize = opts.axisSize ?? 25;
     }
 
     get enableAA() {
